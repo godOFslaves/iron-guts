@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRON GUTS</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+
+    canvas#game {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #hint {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.85);
+      color: #e0e0e0;
+      z-index: 10;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #hint h1 {
+      font-size: 2.5rem;
+      letter-spacing: 0.4rem;
+      color: #ff4444;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    #hint p {
+      font-size: 1rem;
+      color: #aaa;
+      margin-bottom: 0.5rem;
+    }
+
+    #hint .start {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      color: #ff4444;
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="hint">
+    <h1>IRON GUTS</h1>
+    <p>WASD — move</p>
+    <p>Mouse — look</p>
+    <p>ESC — release mouse</p>
+    <p class="start">Click to start</p>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
