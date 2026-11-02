@@ -6,6 +6,8 @@ export class InputManager {
   private mouseDeltaY = 0
   private _locked = false
   private _onLockChange?: (locked: boolean) => void
+  private _onFire?: () => void
+  private _onReload?: () => void
 
   constructor(private canvas: HTMLCanvasElement) {
     this.setupKeyboard()
@@ -29,6 +31,14 @@ export class InputManager {
     this._onLockChange = fn
   }
 
+  setOnFire(fn: () => void): void {
+    this._onFire = fn
+  }
+
+  setOnReload(fn: () => void): void {
+    this._onReload = fn
+  }
+
   resetMouseDelta(): void {
     this.mouseDeltaX = 0
     this.mouseDeltaY = 0
@@ -37,6 +47,11 @@ export class InputManager {
   private setupKeyboard(): void {
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       this.keys[e.code] = true
+
+      // Reload on R press (once per press, not continuous)
+      if (e.code === 'KeyR' && !e.repeat) {
+        this._onReload?.()
+      }
     })
     window.addEventListener('keyup', (e: KeyboardEvent) => {
       this.keys[e.code] = false
@@ -48,6 +63,13 @@ export class InputManager {
       if (this._locked) {
         this.mouseDeltaX += e.movementX
         this.mouseDeltaY += e.movementY
+      }
+    })
+
+    // Left mouse button for shooting
+    this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
+      if (this._locked && e.button === 0) {
+        this._onFire?.()
       }
     })
   }

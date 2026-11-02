@@ -62,6 +62,114 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
+
+    /* HUD overlay */
+    #hud {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    #hud-crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+    }
+
+    #hud-crosshair span {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .ch-top {
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 6px;
+    }
+
+    .ch-bottom {
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 6px;
+    }
+
+    .ch-left {
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 2px;
+    }
+
+    .ch-right {
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 2px;
+    }
+
+    #hud-ammo {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 1.5rem;
+      color: #e0e0e0;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    #hud-empty-ammo {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 1.2rem;
+      color: #ff4444;
+      text-shadow: 1px 1px 2px #000;
+      display: none;
+    }
+
+    #hud-hit-counter {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1rem;
+      color: #aaa;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    #hud-hit-flash {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    #hud-reload-bar {
+      position: absolute;
+      bottom: 60px;
+      right: 20px;
+      width: 120px;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid #555;
+      display: none;
+    }
+
+    #hud-reload-fill {
+      height: 100%;
+      background: #ffaa00;
+      width: 0%;
+      transition: width 0.05s linear;
+    }
   </style>
 </head>
 <body>
@@ -70,6 +178,8 @@
     <h1>IRON GUTS</h1>
     <p>WASD — move</p>
     <p>Mouse — look</p>
+    <p>Left Click — shoot</p>
+    <p>R — reload</p>
     <p>ESC — release mouse</p>
     <p class="start">Click to start</p>
   </div>

@@ -14,9 +14,14 @@ An original retro-inspired first-person shooter built with TypeScript and Three.
 - AABB wall collision with sliding along walls
 - Corner collision handling
 - Max delta-time cap to prevent teleporting after tab-switch
-- Minimal gray-box test room
+- Pistol with hitscan shooting
+- Limited magazine with reload (R key)
+- Muzzle flash and recoil
+- Colored target dummies that react to hits
+- HTML/CSS HUD overlay (crosshair, ammo counter, hit counter)
+- Procedural audio (gunshot, hit, reload sounds via Web Audio API)
 - TypeScript throughout for type safety
-- Automated tests for physics logic
+- Automated tests for physics and ammo logic
 
 ## Controls
 
@@ -24,6 +29,8 @@ An original retro-inspired first-person shooter built with TypeScript and Three.
 |-----|--------|
 | WASD / Arrow keys | Move |
 | Mouse | Look around |
+| Left Click | Shoot |
+| R | Reload |
 | Click | Capture mouse (start) |
 | ESC | Release mouse |
 
@@ -95,11 +102,11 @@ npm run lint
 |-------|-------------|--------|
 | 0 | Project scaffold (Vite, TypeScript, Three.js, ESLint, Vitest) | Done |
 | 1 | First 3D prototype — movement, mouse look, wall collision | Done |
-| 2 | Shooting system | Planned |
+| 2 | Pistol, ammo, reloading, targets, HUD, procedural audio | Done |
 | 3 | Enemies and AI | Planned |
 | 4 | Health and pickups | Planned |
-| 5 | Menu and HUD | Planned |
-| 6 | Audio and polish | Planned |
+| 5 | Multiple levels | Planned |
+| 6 | Music and polish | Planned |
 
 ## License
 

@@ -23,7 +23,8 @@ export default [
         requestAnimationFrame: 'readonly',
         KeyboardEvent: 'readonly',
         MouseEvent: 'readonly',
-        __dirname: 'readonly',
+        AudioContext: 'readonly',
+        setTimeout: 'readonly',
       },
     },
     plugins: {
