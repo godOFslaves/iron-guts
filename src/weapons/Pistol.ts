@@ -62,6 +62,10 @@ export class Pistol {
     return this._recoilPitch
   }
 
+  set recoilPitch(value: number) {
+    this._recoilPitch = value
+  }
+
   fire(): void {
     if (!this.ammoSystem.canFire) return
     this.ammoSystem.fire()
@@ -86,18 +90,6 @@ export class Pistol {
       flashMat.opacity = 0
       this._flashLight.intensity = 0
     }
-
-    // Recoil recovery
-    if (this._recoilPitch > 0) {
-      this._recoilPitch *= Math.pow(0.01, dt) // exponential decay
-      if (this._recoilPitch < 0.0001) {
-        this._recoilPitch = 0
-      }
-    }
-  }
-
-  applyRecoilToCamera(pitch: number): number {
-    return pitch + this._recoilPitch
   }
 
   reset(): void {

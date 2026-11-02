@@ -241,19 +241,25 @@ export class Game {
       return
     }
 
-    // Mouse look (with recoil)
+    // Mouse look
     const { x: mx, y: my } = this.input.mouseDelta
     this.yaw -= mx * INPUT.mouseSensitivity
-    let pitchDelta = my * INPUT.mouseSensitivity
-    pitchDelta = this.pistol.applyRecoilToCamera(pitchDelta)
-    this.pitch -= pitchDelta
+    this.pitch -= my * INPUT.mouseSensitivity
     this.pitch = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, this.pitch))
     this.input.resetMouseDelta()
 
-    // Camera rotation
+    // Recoil decay (independent of mouse movement)
+    if (this.pistol.recoilPitch > 0) {
+      this.pistol.recoilPitch *= Math.pow(0.01, dt)
+      if (this.pistol.recoilPitch < 0.0001) {
+        this.pistol.recoilPitch = 0
+      }
+    }
+
+    // Camera rotation (recoil added to pitch)
     this.camera.rotation.order = 'YXZ'
     this.camera.rotation.y = this.yaw
-    this.camera.rotation.x = this.pitch
+    this.camera.rotation.x = this.pitch + this.pistol.recoilPitch
 
     // Movement
     const keys = this.input.keysDown
@@ -325,5 +331,24 @@ export class Game {
     this.render()
 
     requestAnimationFrame(() => this.loop())
+  }
+
+  dispose(): void {
+    this.renderer.dispose()
+    this.scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh) {
+        obj.geometry.dispose()
+        const mat = obj.material as THREE.Material | THREE.Material[]
+        if (Array.isArray(mat)) {
+          mat.forEach((m) => m.dispose())
+        } else {
+          mat.dispose()
+        }
+      }
+    })
+    for (const target of this.targets) {
+      target.dispose()
+    }
+    this.audio.dispose()
   }
 }

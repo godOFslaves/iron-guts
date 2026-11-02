@@ -85,4 +85,12 @@ export class AudioSystem {
       this.ensureContext()
     }
   }
+
+  dispose(): void {
+    if (this._ctx) {
+      this._ctx.close()
+      this._ctx = null
+      this._enabled = false
+    }
+  }
 }

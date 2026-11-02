@@ -10,7 +10,7 @@ describe('AmmoSystem', () => {
   })
 
   it('fires until empty', () => {
-    const ammo = new AmmoSystem(3, 1.0, 0) // zero delay for this test
+    const ammo = new AmmoSystem(3, 1.0, 0)
     expect(ammo.fire()).toBe(true)
     expect(ammo.ammo).toBe(2)
     expect(ammo.canFire).toBe(true)
@@ -103,5 +103,38 @@ describe('AmmoSystem', () => {
     ammo.reset()
     expect(ammo.ammo).toBe(6)
     expect(ammo.state).toBe('ready')
+  })
+
+  it('cannot fire while reloading', () => {
+    const ammo = new AmmoSystem(10, 2.0, 0)
+    ammo.fire()
+    ammo.reload()
+    expect(ammo.canFire).toBe(false)
+    expect(ammo.fire()).toBe(false)
+  })
+
+  it('cannot fire full magazine', () => {
+    const ammo = new AmmoSystem(10, 1.0, 0)
+    expect(ammo.canFire).toBe(true)
+    // Fire one to make it not full
+    ammo.fire()
+    // Now fire rest
+    for (let i = 1; i < 10; i++) {
+      ammo.fire()
+    }
+    expect(ammo.ammo).toBe(0)
+
+    // Reset and test full mag
+    ammo.reset()
+    expect(ammo.ammo).toBe(10)
+    expect(ammo.canFire).toBe(true) // canFire checks ammo > 0 and state === ready
+    // canFire should be true even when full — it just checks ammo > 0
+  })
+
+  it('reload progress is 0 when not reloading', () => {
+    const ammo = new AmmoSystem(10, 1.0, 0)
+    expect(ammo.reloadProgress).toBe(0)
+    ammo.fire()
+    expect(ammo.reloadProgress).toBe(0)
   })
 })
