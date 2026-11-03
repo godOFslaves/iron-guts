@@ -5,8 +5,15 @@ import { AudioSystem } from './Audio.js'
 import { AmmoSystem } from '../weapons/AmmoSystem.js'
 import { Pistol } from '../weapons/Pistol.js'
 import { Target, TargetConfig } from '../entities/Target.js'
+import { PlayerHealth } from '../entities/PlayerHealth.js'
+import { EnemySystem } from './EnemySystem.js'
 import { HUD } from '../ui/HUD.js'
-import { ROOM, PLAYER, INPUT, WALLS, WEAPON, TARGETS } from '../config/game.js'
+import {
+  ROOM, PLAYER, INPUT, WALLS,
+  WEAPON, PLAYER_HEALTH, TARGETS, ENEMY_SPAWNS,
+} from '../config/game.js'
+
+export type GameState = 'menu' | 'playing' | 'dead' | 'won'
 
 export class Game {
   private renderer: THREE.WebGLRenderer
@@ -16,6 +23,8 @@ export class Game {
   private audio: AudioSystem
   private pistol: Pistol
   private ammoSystem: AmmoSystem
+  private playerHealth: PlayerHealth
+  private enemySystem: EnemySystem
   private targets: Target[] = []
   private hud: HUD
   private raycaster = new THREE.Raycaster()
@@ -25,46 +34,12 @@ export class Game {
   private pitch = 0
   private hintEl: HTMLElement | null = null
   private started = false
+  private gameState: GameState = 'menu'
   private hitCount = 0
 
   constructor(canvas: HTMLCanvasElement) {
     this.input = new InputManager(canvas)
     this.audio = new AudioSystem()
-
-    this.ammoSystem = new AmmoSystem(
-      WEAPON.magSize,
-      WEAPON.reloadTime,
-      WEAPON.fireDelay
-    )
-    this.pistol = new Pistol(this.ammoSystem, WEAPON.flashDuration)
-
-    this.hud = new HUD()
-
-    this.input.setOnLockChange((locked) => {
-      if (locked && !this.started) {
-        this.started = true
-        this.hideHint()
-        this.audio.enable()
-      }
-    })
-
-    this.input.setOnFire(() => {
-      this.shoot()
-    })
-
-    this.input.setOnReload(() => {
-      this.reload()
-    })
-
-    // Hint click handler
-    this.hintEl = document.getElementById('hint')!
-    this.hintEl.addEventListener('click', () => {
-      if (!this.started) {
-        this.started = true
-        this.hideHint()
-        canvas.requestPointerLock()
-      }
-    })
 
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
@@ -84,6 +59,7 @@ export class Game {
       100
     )
     this.camera.position.set(0, PLAYER.eyeHeight, 0)
+    this.camera.rotation.order = 'YXZ'
 
     // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 0.6)
@@ -93,11 +69,63 @@ export class Game {
     dirLight.position.set(3, 5, 3)
     this.scene.add(dirLight)
 
+    this.enemySystem = new EnemySystem(this.scene)
+
+    this.ammoSystem = new AmmoSystem(
+      WEAPON.magSize,
+      WEAPON.reloadTime,
+      WEAPON.fireDelay
+    )
+    this.pistol = new Pistol(this.ammoSystem, WEAPON.flashDuration)
+    this.playerHealth = new PlayerHealth(
+      PLAYER_HEALTH.maxHealth,
+      PLAYER_HEALTH.damageCooldown
+    )
+    this.hud = new HUD()
+
+    this.input.setOnLockChange((locked) => {
+      if (locked && !this.started) {
+        this.started = true
+        this.gameState = 'playing'
+        this.hideHint()
+        this.audio.enable()
+        this.hud.showCrosshair(true)
+      }
+    })
+
+    this.input.setOnFire(() => {
+      if (this.gameState === 'playing') {
+        this.shoot()
+      }
+    })
+
+    this.input.setOnReload(() => {
+      if (this.gameState === 'playing') {
+        this.reload()
+      } else if (this.gameState === 'dead' || this.gameState === 'won') {
+        this.restart()
+      }
+    })
+
+    // Hint click handler
+    this.hintEl = document.getElementById('hint')!
+    this.hintEl.addEventListener('click', () => {
+      if (!this.started) {
+        this.started = true
+        this.gameState = 'playing'
+        this.hideHint()
+        canvas.requestPointerLock()
+      }
+    })
+
     // Room
     this.buildRoom()
 
     // Targets
     this.buildTargets()
+
+    // Enemies
+    this.buildEnemies()
 
     // Weapon group attached to camera
     this.camera.add(this.pistol.group)
@@ -182,6 +210,12 @@ export class Game {
     }
   }
 
+  private buildEnemies(): void {
+    for (const spawn of ENEMY_SPAWNS) {
+      this.enemySystem.addEnemy(spawn.position)
+    }
+  }
+
   private hideHint(): void {
     if (this.hintEl) {
       this.hintEl.style.display = 'none'
@@ -203,25 +237,50 @@ export class Game {
     // Hitscan raycast from camera center
     this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera)
 
-    // Collect all target meshes
+    // Collect all target meshes (targets + alive enemies)
     const targetMeshes = this.targets
       .filter((t) => t.alive)
       .map((t) => t.mesh)
+    const enemyMeshes = this.enemySystem.enemies
+      .filter((e) => e.alive)
+      .map((e) => e.mesh)
 
-    const intersects = this.raycaster.intersectObjects(targetMeshes)
+    const allMeshes = [...targetMeshes, ...enemyMeshes]
+    const intersects = this.raycaster.intersectObjects(allMeshes)
 
     if (intersects.length > 0) {
+      const hitMesh = intersects[0].object
+
+      // Check if it's a target
       const hitTarget = this.targets.find(
-        (t) => t.alive && t.mesh === intersects[0].object
+        (t) => t.alive && t.mesh === hitMesh
       )
       if (hitTarget) {
-        const destroyed = hitTarget.hit()
+        hitTarget.hit()
         this.audio.playHit()
         this.hud.showHitFlash()
         this.hitCount++
         this.hud.updateHitCounter(this.hitCount)
-        if (destroyed) {
-          // Target destroyed
+      }
+
+      // Check if it's an enemy
+      const hitEnemy = this.enemySystem.applyHit(hitMesh as THREE.Mesh)
+      if (hitEnemy) {
+        const alive = hitEnemy.takeDamage(WEAPON.damage)
+        this.audio.playHit()
+        this.hud.showHitFlash()
+        if (alive) {
+          this.hitCount++
+          this.hud.updateHitCounter(this.hitCount)
+        } else {
+          // Enemy killed
+          this.audio.playHit()
+          // Check victory
+          if (this.enemySystem.aliveCount === 0) {
+            this.gameState = 'won'
+            this.hud.showVictoryScreen()
+            this.hud.showCrosshair(false)
+          }
         }
       }
     }
@@ -233,11 +292,57 @@ export class Game {
     this.audio.playReload()
   }
 
+  private restart(): void {
+    // Reset game state
+    this.gameState = 'playing'
+    this.hitCount = 0
+
+    // Reset player
+    this.playerPos = { x: 0, z: 0 }
+    this.yaw = 0
+    this.pitch = 0
+    this.camera.position.set(0, PLAYER.eyeHeight, 0)
+    this.camera.rotation.set(0, 0, 0)
+
+    // Reset systems
+    this.ammoSystem.reset()
+    this.pistol.reset()
+    this.playerHealth.reset()
+    this.enemySystem.reset()
+
+    // Reset targets
+    for (const target of this.targets) {
+      if (!target.alive) {
+        target.dispose()
+      } else {
+        target._alive = true
+        target._hits = target._originalHits
+        target._mesh.visible = true
+      }
+    }
+
+    // Reset HUD
+    this.hud.updateAmmo(WEAPON.magSize, WEAPON.magSize)
+    this.hud.updateHealth(PLAYER_HEALTH.maxHealth, PLAYER_HEALTH.maxHealth)
+    this.hud.updateEnemyCounter(
+      this.enemySystem.aliveCount,
+      this.enemySystem.getTotal()
+    )
+    this.hud.updateHitCounter(0)
+    this.hud.hideDeathScreen()
+    this.hud.hideVictoryScreen()
+    this.hud.showCrosshair(true)
+
+    // Re-lock pointer
+    const canvas = this.renderer.domElement
+    canvas.requestPointerLock()
+  }
+
   private update(dt: number): void {
     const clampedDt = clampDelta(dt, INPUT.maxDelta)
 
-    // Only process input when pointer is locked
-    if (!this.input.locked) {
+    // Only process input when pointer is locked and playing
+    if (!this.input.locked || this.gameState !== 'playing') {
       return
     }
 
@@ -308,6 +413,15 @@ export class Game {
       target.update(dt)
     }
 
+    // Enemy updates
+    this.playerHealth.update(dt)
+    const enemyDamage = this.enemySystem.update(dt, this.playerPos, this.playerHealth)
+
+    // Check if player was damaged this frame
+    if (enemyDamage > 0) {
+      this.hud.showDamageFlash()
+    }
+
     // Update HUD
     if (this.ammoSystem.isReloading) {
       this.hud.updateReload(this.ammoSystem.reloadProgress)
@@ -315,6 +429,19 @@ export class Game {
       this.hud.showEmpty()
     } else {
       this.hud.updateAmmo(this.ammoSystem.ammo, WEAPON.magSize)
+    }
+
+    this.hud.updateHealth(this.playerHealth.health, this.playerHealth.maxHealth)
+    this.hud.updateEnemyCounter(
+      this.enemySystem.aliveCount,
+      this.enemySystem.getTotal()
+    )
+
+    // Check death
+    if (this.playerHealth.isDead && this.gameState === 'playing') {
+      this.gameState = 'dead'
+      this.hud.showDeathScreen()
+      this.hud.showCrosshair(false)
     }
   }
 
@@ -349,6 +476,7 @@ export class Game {
     for (const target of this.targets) {
       target.dispose()
     }
+    this.enemySystem.dispose()
     this.audio.dispose()
   }
 }

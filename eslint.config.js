@@ -25,6 +25,7 @@ export default [
         MouseEvent: 'readonly',
         AudioContext: 'readonly',
         setTimeout: 'readonly',
+        THREE: 'readonly',
       },
     },
     plugins: {

@@ -170,6 +170,115 @@
       width: 0%;
       transition: width 0.05s linear;
     }
+
+    /* Health bar */
+    #hud-health-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 200px;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #555;
+    }
+
+    #hud-health-fill {
+      height: 100%;
+      width: 100%;
+      background: #44ff44;
+      transition: width 0.2s, background 0.2s;
+    }
+
+    #hud-health-text {
+      position: absolute;
+      bottom: 44px;
+      left: 20px;
+      font-size: 0.9rem;
+      color: #e0e0e0;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* Enemy counter */
+    #hud-enemy-counter {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1rem;
+      color: #aaa;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* Damage flash */
+    #hud-damage-flash {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, transparent 50%, rgba(255, 0, 0, 0.4), transparent 100%);
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    /* Death screen */
+    #hud-death-screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(80, 0, 0, 0.8);
+      color: #ff4444;
+    }
+
+    #hud-death-screen h2 {
+      font-size: 3rem;
+      letter-spacing: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    #hud-death-screen p {
+      font-size: 1.1rem;
+      color: #cc8888;
+    }
+
+    #hud-death-screen kbd {
+      background: #333;
+      border: 1px solid #666;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-family: inherit;
+    }
+
+    /* Victory screen */
+    #hud-victory-screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 80, 0, 0.8);
+      color: #44ff44;
+    }
+
+    #hud-victory-screen h2 {
+      font-size: 3rem;
+      letter-spacing: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    #hud-victory-screen p {
+      font-size: 1.1rem;
+      color: #88cc88;
+      margin-bottom: 0.3rem;
+    }
+
+    #hud-victory-screen kbd {
+      background: #333;
+      border: 1px solid #666;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-family: inherit;
+    }
   </style>
 </head>
 <body>

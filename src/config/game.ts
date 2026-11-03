@@ -20,6 +20,26 @@ export const WEAPON = {
   reloadTime: 1.5,
   fireDelay: 0.3,
   flashDuration: 0.05,
+  damage: 25,
+} as const
+
+export const PLAYER_HEALTH = {
+  maxHealth: 100,
+  damageCooldown: 0.5,
+} as const
+
+export const ENEMY = {
+  health: 50,
+  radius: 0.3,
+  detectionRadius: 6,
+  attackRange: 1.2,
+  moveSpeed: 2,
+  attackInterval: 1.0,
+  damage: 15,
+} as const
+
+export const AUDIO = {
+  enemyDamage: ENEMY.damage,
 } as const
 
 export const TARGETS = [
@@ -27,6 +47,12 @@ export const TARGETS = [
   { position: [-3, 1.2, -3] as [number, number, number], size: 0.35, hitsToDestroy: 2, color: 0x44ff44 },
   { position: [3, 1.2, -3] as [number, number, number], size: 0.35, hitsToDestroy: 2, color: 0x4444ff },
   { position: [0, 1.2, -7] as [number, number, number], size: 0.5, hitsToDestroy: 4, color: 0xffff44 },
+] as const
+
+export const ENEMY_SPAWNS = [
+  { position: [-4, 0, -4] as [number, number, number] },
+  { position: [4, 0, -4] as [number, number, number] },
+  { position: [0, 0, -8] as [number, number, number] },
 ] as const
 
 export const WALLS = [

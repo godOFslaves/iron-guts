@@ -8,11 +8,12 @@ export interface TargetConfig {
 }
 
 export class Target {
-  private _mesh: THREE.Mesh
-  private _hits: number
-  private _alive = true
-  private _flashTimer = 0
-  private _originalColor: THREE.Color
+  _mesh: THREE.Mesh
+  _hits: number
+  _alive = true
+  _flashTimer = 0
+  _originalColor: THREE.Color
+  _originalHits: number
 
   constructor(config: TargetConfig, scene: THREE.Scene) {
     const geometry = new THREE.CylinderGeometry(config.size, config.size, config.size * 0.3, 16)
@@ -26,6 +27,7 @@ export class Target {
     this._mesh.position.set(...config.position)
     this._mesh.rotation.x = Math.PI / 2
     this._originalColor = new THREE.Color(config.color)
+    this._originalHits = config.hitsToDestroy
     this._hits = config.hitsToDestroy
 
     scene.add(this._mesh)
