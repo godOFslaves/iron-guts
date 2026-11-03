@@ -35,7 +35,11 @@ export const ENEMY = {
   attackRange: 1.2,
   moveSpeed: 2,
   attackInterval: 1.0,
+  attackWindupTime: 0.6,
+  attackCooldownTime: 1.2,
   damage: 15,
+  enemySeparationRadius: 1.0,
+  warningRingColor: 0xffff00,
 } as const
 
 export const AUDIO = {

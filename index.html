@@ -279,6 +279,24 @@
       padding: 2px 6px;
       font-family: inherit;
     }
+
+    /* Enemy warning indicator */
+    #hud-enemy-warning {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      color: #ffaa00;
+      text-shadow: 1px 1px 2px #000;
+      display: none;
+      animation: warningPulse 0.5s infinite alternate;
+    }
+
+    @keyframes warningPulse {
+      from { opacity: 0.5; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>

@@ -36,6 +36,7 @@ export class Game {
   private started = false
   private gameState: GameState = 'menu'
   private hitCount = 0
+  private _wallMeshes: THREE.Mesh[] = []
 
   constructor(canvas: HTMLCanvasElement) {
     this.input = new InputManager(canvas)
@@ -177,6 +178,7 @@ export class Game {
     )
     north.position.set(0, h / 2, -halfD)
     this.scene.add(north)
+    this._wallMeshes.push(north)
 
     // South wall
     const south = new THREE.Mesh(
@@ -185,6 +187,7 @@ export class Game {
     )
     south.position.set(0, h / 2, halfD)
     this.scene.add(south)
+    this._wallMeshes.push(south)
 
     // West wall
     const west = new THREE.Mesh(
@@ -193,6 +196,7 @@ export class Game {
     )
     west.position.set(-halfW, h / 2, 0)
     this.scene.add(west)
+    this._wallMeshes.push(west)
 
     // East wall
     const east = new THREE.Mesh(
@@ -201,6 +205,7 @@ export class Game {
     )
     east.position.set(halfW, h / 2, 0)
     this.scene.add(east)
+    this._wallMeshes.push(east)
   }
 
   private buildTargets(): void {
@@ -211,8 +216,14 @@ export class Game {
   }
 
   private buildEnemies(): void {
+    this.enemySystem.setWallMeshes(this._wallMeshes)
     for (const spawn of ENEMY_SPAWNS) {
-      this.enemySystem.addEnemy(spawn.position)
+      this.enemySystem.addEnemy(spawn.position, {
+        onDetect: () => this.audio.playDetect(),
+        onWindup: () => this.audio.playWindup(),
+        onStrike: () => this.audio.playStrike(),
+        onDeath: () => this.audio.playDeath(),
+      })
     }
   }
 
@@ -245,11 +256,18 @@ export class Game {
       .filter((e) => e.alive)
       .map((e) => e.mesh)
 
-    const allMeshes = [...targetMeshes, ...enemyMeshes]
+    // Include wall meshes to block shots through walls
+    const allMeshes = [...targetMeshes, ...enemyMeshes, ...this._wallMeshes]
     const intersects = this.raycaster.intersectObjects(allMeshes)
 
     if (intersects.length > 0) {
       const hitMesh = intersects[0].object
+
+      // Check if first hit is a wall — block the shot
+      const isWall = this._wallMeshes.includes(hitMesh as THREE.Mesh)
+      if (isWall) {
+        return
+      }
 
       // Check if it's a target
       const hitTarget = this.targets.find(
@@ -266,6 +284,7 @@ export class Game {
       // Check if it's an enemy
       const hitEnemy = this.enemySystem.applyHit(hitMesh as THREE.Mesh)
       if (hitEnemy) {
+        hitEnemy.applyHitVisual()
         const alive = hitEnemy.takeDamage(WEAPON.damage)
         this.audio.playHit()
         this.hud.showHitFlash()
@@ -274,7 +293,7 @@ export class Game {
           this.hud.updateHitCounter(this.hitCount)
         } else {
           // Enemy killed
-          this.audio.playHit()
+          this.audio.playDeath()
           // Check victory
           if (this.enemySystem.aliveCount === 0) {
             this.gameState = 'won'
@@ -308,7 +327,7 @@ export class Game {
     this.ammoSystem.reset()
     this.pistol.reset()
     this.playerHealth.reset()
-    this.enemySystem.reset()
+    this.enemySystem.reset(ENEMY_SPAWNS)
 
     // Reset targets
     for (const target of this.targets) {
@@ -436,6 +455,12 @@ export class Game {
       this.enemySystem.aliveCount,
       this.enemySystem.getTotal()
     )
+
+    // Show warning if any enemy has LOS and is in attack range
+    const anyEnemyInRange = this.enemySystem.enemies.some(
+      (e) => e.alive && e.isInAttackRange(this.playerPos) && e.hasLOS
+    )
+    this.hud.showWarning(anyEnemyInRange)
 
     // Check death
     if (this.playerHealth.isDead && this.gameState === 'playing') {

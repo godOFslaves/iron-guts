@@ -78,6 +78,97 @@ export class AudioSystem {
     osc.stop(now + 0.25)
   }
 
+  playDetect(): void {
+    if (!this.ensureContext() || !this._ctx) return
+
+    const now = this._ctx.currentTime
+    const osc = this._ctx.createOscillator()
+    const gain = this._ctx.createGain()
+
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(600, now)
+    osc.frequency.exponentialRampToValueAtTime(900, now + 0.15)
+
+    gain.gain.setValueAtTime(0.15, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2)
+
+    osc.connect(gain)
+    gain.connect(this._ctx.destination)
+    osc.start(now)
+    osc.stop(now + 0.2)
+  }
+
+  playWindup(): void {
+    if (!this.ensureContext() || !this._ctx) return
+
+    const now = this._ctx.currentTime
+    const osc = this._ctx.createOscillator()
+    const gain = this._ctx.createGain()
+
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(150, now)
+    osc.frequency.linearRampToValueAtTime(100, now + 0.5)
+
+    gain.gain.setValueAtTime(0.12, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
+
+    osc.connect(gain)
+    gain.connect(this._ctx.destination)
+    osc.start(now)
+    osc.stop(now + 0.6)
+  }
+
+  playStrike(): void {
+    if (!this.ensureContext() || !this._ctx) return
+
+    const now = this._ctx.currentTime
+    const osc = this._ctx.createOscillator()
+    const gain = this._ctx.createGain()
+
+    osc.type = 'square'
+    osc.frequency.setValueAtTime(300, now)
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.15)
+
+    gain.gain.setValueAtTime(0.25, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2)
+
+    osc.connect(gain)
+    gain.connect(this._ctx.destination)
+    osc.start(now)
+    osc.stop(now + 0.2)
+  }
+
+  playDeath(): void {
+    if (!this.ensureContext() || !this._ctx) return
+
+    const now = this._ctx.currentTime
+
+    // Two-tone descending death sound
+    const osc1 = this._ctx.createOscillator()
+    const gain1 = this._ctx.createGain()
+    osc1.type = 'sawtooth'
+    osc1.frequency.setValueAtTime(400, now)
+    osc1.frequency.exponentialRampToValueAtTime(100, now + 0.5)
+    gain1.gain.setValueAtTime(0.2, now)
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
+    osc1.connect(gain1)
+    gain1.connect(this._ctx.destination)
+    osc1.start(now)
+    osc1.stop(now + 0.6)
+
+    const osc2 = this._ctx.createOscillator()
+    const gain2 = this._ctx.createGain()
+    osc2.type = 'sine'
+    osc2.frequency.setValueAtTime(300, now + 0.1)
+    osc2.frequency.exponentialRampToValueAtTime(50, now + 0.7)
+    gain2.gain.setValueAtTime(0.15, now + 0.1)
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8)
+    osc2.connect(gain2)
+    gain2.connect(this._ctx.destination)
+    osc2.start(now + 0.1)
+    osc2.stop(now + 0.8)
+  }
+
   enable(): void {
     if (this._ctx?.state === 'suspended') {
       this._ctx.resume()

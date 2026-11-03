@@ -10,6 +10,7 @@ export class HUD {
   private damageFlashEl: HTMLElement
   private deathScreenEl: HTMLElement
   private victoryScreenEl: HTMLElement
+  private warningEl: HTMLElement
 
   constructor() {
     this.createOverlay()
@@ -24,6 +25,7 @@ export class HUD {
     this.damageFlashEl = document.getElementById('hud-damage-flash')!
     this.deathScreenEl = document.getElementById('hud-death-screen')!
     this.victoryScreenEl = document.getElementById('hud-victory-screen')!
+    this.warningEl = document.getElementById('hud-enemy-warning')!
   }
 
   private createOverlay(): void {
@@ -48,6 +50,7 @@ export class HUD {
       <div id="hud-hit-flash"></div>
       <div id="hud-damage-flash"></div>
       <div id="hud-reload-bar"><div id="hud-reload-fill"></div></div>
+      <div id="hud-enemy-warning">⚠ ENEMY IN RANGE</div>
       <div id="hud-death-screen">
         <h2>YOU DIED</h2>
         <p>Press <kbd>R</kbd> or <kbd>Enter</kbd> to restart</p>
@@ -142,5 +145,9 @@ export class HUD {
 
   hideVictoryScreen(): void {
     this.victoryScreenEl.style.display = 'none'
+  }
+
+  showWarning(show: boolean): void {
+    this.warningEl.style.display = show ? '' : 'none'
   }
 }
